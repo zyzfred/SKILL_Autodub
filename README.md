@@ -8,6 +8,8 @@ Current sealed release: `v1.0.0`
 
 Detailed release note: [`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md)
 
+License: [MIT](LICENSE)
+
 This skill generates localized subtitle deliverables from local video files or timed subtitle assets. It uses DashScope FunASR for ASR, an OpenAI-compatible chat completion API for translation, and exports clean `srt` / `vtt` files with:
 
 - short emphasis cues preserved by default

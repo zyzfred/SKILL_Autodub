@@ -8,6 +8,8 @@
 
 详细发布说明：[`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md)
 
+许可证：[MIT](LICENSE)
+
 这个 skill 用于从本地视频文件或已有时间轴字幕资产生成目标语言字幕。它使用 DashScope FunASR 做 ASR，使用 OpenAI-compatible Chat Completions 做翻译，并导出干净的 `srt` / `vtt` 字幕文件，默认行为包括：
 
 - 默认保留短重点句
