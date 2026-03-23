@@ -7,6 +7,8 @@
 当前封版版本：`v1.0.0`
 
 详细发布说明：[`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md)
+贡献说明：[`CONTRIBUTING.md`](CONTRIBUTING.md)
+下一轮计划：[`docs/plans/v1.0.1.md`](docs/plans/v1.0.1.md)
 
 许可证：[MIT](LICENSE)
 
@@ -17,6 +19,22 @@
 - 导出字幕默认使用最小标点
 - 长句默认按语义换行，不强制拆成更多 cue
 - `max-lines` 仅作为 warning，不作为强制优化目标
+
+## 工作流
+
+```mermaid
+flowchart LR
+  A["输入视频或已有时间轴字幕"] --> B["探测媒体并提取 16 kHz WAV"]
+  B --> C["FunASR 激进 VAD 转写"]
+  C --> D["Source 重分句：长句切分，短重点句保留"]
+  D --> E["语义修复：只合并残缺片段"]
+  E --> F["目标语言翻译"]
+  F --> G["时间轴微调"]
+  G --> H["导出 SRT/VTT：最小标点 + 语义换行"]
+  H --> I["Lint"]
+  F -. "按需启用 target 侧拆 cue" .-> J["Target reflow"]
+  J --> G
+```
 
 ## 仓库结构
 

@@ -7,6 +7,8 @@ Repository for the `video-target-subtitles` Codex skill.
 Current sealed release: `v1.0.0`
 
 Detailed release note: [`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md)
+Contribution guide: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+Next iteration plan: [`docs/plans/v1.0.1.md`](docs/plans/v1.0.1.md)
 
 License: [MIT](LICENSE)
 
@@ -17,6 +19,22 @@ This skill generates localized subtitle deliverables from local video files or t
 - minimal punctuation in exported subtitles
 - semantic line wrapping at standard line length
 - `max-lines` treated as a warning-only review rule
+
+## Workflow
+
+```mermaid
+flowchart LR
+  A["Input video or timed subtitles"] --> B["Probe media and extract 16 kHz WAV"]
+  B --> C["FunASR aggressive VAD transcription"]
+  C --> D["Source rebalance: split long cues, preserve short beats"]
+  D --> E["Semantic repair: fragment-only merges"]
+  E --> F["Target translation"]
+  F --> G["Timing polish"]
+  G --> H["Export SRT or VTT: minimal punctuation + semantic wrapping"]
+  H --> I["Lint"]
+  F -. "Optional target-side cue splitting" .-> J["Target reflow"]
+  J --> G
+```
 
 ## Repository Layout
 
