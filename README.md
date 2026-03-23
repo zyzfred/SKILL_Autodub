@@ -2,6 +2,8 @@
 
 Repository for the `video-target-subtitles` Codex skill.
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 Current sealed release: `v1.0.0`
 
 Detailed release note: [`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md)
