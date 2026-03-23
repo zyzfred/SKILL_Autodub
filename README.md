@@ -4,6 +4,8 @@ Repository for the `video-target-subtitles` Codex skill.
 
 Current sealed release: `v1.0.0`
 
+Detailed release note: [`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md)
+
 This skill generates localized subtitle deliverables from local video files or timed subtitle assets. It uses DashScope FunASR for ASR, an OpenAI-compatible chat completion API for translation, and exports clean `srt` / `vtt` files with:
 
 - short emphasis cues preserved by default
@@ -123,3 +125,4 @@ Use $video-target-subtitles to generate English subtitles for /absolute/path/inp
 - export subtitles with minimal punctuation
 - wrap long cues semantically instead of forcing extra cue splits by default
 
+For the full release summary, validation snapshot, and accepted residual warnings, see [`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md).
