@@ -1,5 +1,7 @@
 # Subtitle Localization Reference
 
+[English](subtitle-localization.md) | [简体中文](subtitle-localization.zh-CN.md)
+
 ## Contents
 
 - JSON shape

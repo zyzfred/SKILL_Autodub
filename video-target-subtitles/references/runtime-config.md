@@ -1,5 +1,7 @@
 # Runtime Configuration
 
+[English](runtime-config.md) | [简体中文](runtime-config.zh-CN.md)
+
 ## Overview
 
 This skill uses two runtime backends:

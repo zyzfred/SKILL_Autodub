@@ -1,4 +1,4 @@
 interface:
   display_name: "Video Subtitle Localizer"
-  short_description: "FunASR ASR plus minimal-punctuation translated subtitles for local video"
-  default_prompt: "Use $video-target-subtitles to transcribe a local video with FunASR, translate the subtitle cues into a target language, preserve short emphasis cues, simplify punctuation, and export clean wrapped SRT or VTT files."
+  short_description: "Single-file or batch subtitle production for local videos and timed text"
+  default_prompt: "Use $video-target-subtitles to generate target-language subtitles for a local video, subtitle file, or folder of local videos. Preserve timestamps, keep the work scoped to subtitle production and linting, and export clean wrapped SRT or VTT files without burn-in or delivery packaging."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video Subtitle Delivery"
+  short_description: "Package reviewed subtitles into ASS, burned videos, and delivery folders"
+  default_prompt: "Use $video-subtitle-delivery to take a folder of local source videos plus matching reviewed subtitles, generate styled ASS files from a fixed preset, hard-burn the subtitles with ffmpeg/libass, and export a delivery folder with a manifest and optional zip package."
