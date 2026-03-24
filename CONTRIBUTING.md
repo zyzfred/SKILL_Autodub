@@ -53,6 +53,21 @@ When default behavior changes, update the relevant files together:
 - `docs/releases/` when writing or updating a public release summary
 - `README.md` and `README.zh-CN.md` when repository-level capability positioning changes
 
+## Release Strategy
+
+- Repository releases use a shared tag format: `vX.Y.Z`
+- Each deployable skill also keeps its own `VERSION` file
+- Repository tags and skill versions are related but not forced to be identical
+- A repository release marks the published baseline of the whole monorepo
+- A skill version marks the contract and runtime state of that one skill
+- Update [`docs/versioning-strategy.md`](docs/versioning-strategy.md) and [`docs/versioning-strategy.zh-CN.md`](docs/versioning-strategy.zh-CN.md) if the release rules change
+
+Current example:
+
+- repository release tag: `v1.1.0`
+- `video-target-subtitles`: `v1.1.0`
+- `video-subtitle-delivery`: `v0.1.0`
+
 ## Branching
 
 - `main` holds released or release-ready repository documentation

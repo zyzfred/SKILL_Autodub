@@ -15,7 +15,9 @@
 
 当前仓库还没有内置独立的语音合成配音 skill。更准确地说，这个仓库负责把多语种配音上游所需的资产做稳定化：审核后的字幕、可复用时间轴 JSON、batch summary、delivery manifest，都可以直接交给下游配音系统继续做 TTS、配音混流或母版生成，而不用重跑 ASR 和翻译。
 
-## 当前版本
+## 当前版本线
+
+仓库级发布标签：`v1.1.0`
 
 | Skill | 版本 | 作用 |
 | --- | --- | --- |
@@ -33,6 +35,11 @@
 
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - [`CONTRIBUTING.zh-CN.md`](CONTRIBUTING.zh-CN.md)
+
+版本策略：
+
+- [`docs/versioning-strategy.md`](docs/versioning-strategy.md)
+- [`docs/versioning-strategy.zh-CN.md`](docs/versioning-strategy.zh-CN.md)
 
 工作流总览：
 

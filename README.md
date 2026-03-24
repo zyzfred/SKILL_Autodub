@@ -15,7 +15,9 @@ This repository now tracks a two-skill workflow for multilingual subtitle produc
 
 This repository does not currently ship a dedicated speech-synthesis dubbing skill. Instead, it documents the handoff boundary for multilingual dubbing workflows: reviewed subtitles, stable timing JSON, batch summaries, and delivery manifests produced here can feed a downstream dubbing system without rerunning ASR or translation.
 
-## Current Versions
+## Current Version Lines
+
+Repository release tag: `v1.1.0`
 
 | Skill | Version | Purpose |
 | --- | --- | --- |
@@ -33,6 +35,11 @@ Contribution guide:
 
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - [`CONTRIBUTING.zh-CN.md`](CONTRIBUTING.zh-CN.md)
+
+Versioning strategy:
+
+- [`docs/versioning-strategy.md`](docs/versioning-strategy.md)
+- [`docs/versioning-strategy.zh-CN.md`](docs/versioning-strategy.zh-CN.md)
 
 Workflow overview:
 

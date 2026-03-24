@@ -53,6 +53,21 @@ python -m py_compile video-target-subtitles/scripts/*.py video-subtitle-delivery
 - `docs/releases/`，如果需要公开发布说明
 - `README.md` 和 `README.zh-CN.md`，如果仓库级能力定位发生变化
 
+## 发布策略
+
+- 仓库级发布统一使用共享 tag 格式：`vX.Y.Z`
+- 每个可部署 skill 同时维护自己的 `VERSION` 文件
+- 仓库 tag 与 skill 版本有关联，但不强制相同
+- 仓库级发布代表整个 monorepo 当前对外发布的基线
+- skill 级版本代表单个 skill 的契约与运行时状态
+- 如果发布规则变化，必须同步更新 [`docs/versioning-strategy.md`](docs/versioning-strategy.md) 与 [`docs/versioning-strategy.zh-CN.md`](docs/versioning-strategy.zh-CN.md)
+
+当前示例：
+
+- 仓库级发布标签：`v1.1.0`
+- `video-target-subtitles`：`v1.1.0`
+- `video-subtitle-delivery`：`v0.1.0`
+
 ## 分支约定
 
 - `main` 用于存放已发布或可发布的仓库文档
