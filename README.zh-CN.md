@@ -17,18 +17,19 @@
 
 ## 当前版本线
 
-仓库级发布标签：`v1.1.0`
+仓库级发布标签：`v1.1.1`
 
 | Skill | 版本 | 作用 |
 | --- | --- | --- |
-| `video-target-subtitles` | `v1.1.0` | 字幕生成、本地化、时间轴修复、批量字幕处理 |
+| `video-target-subtitles` | `v1.1.1` | 字幕生成、本地化、时间轴修复、OCR 兜底、批量字幕处理 |
 | `video-subtitle-delivery` | `v0.1.0` | 审核后字幕打包、样式化 `ASS`、硬字幕输出、交付封装 |
 
 发布说明：
 
-- [`docs/releases/v1.1.0.md`](docs/releases/v1.1.0.md)
-- [`docs/releases/video-target-subtitles-v1.1.0.md`](docs/releases/video-target-subtitles-v1.1.0.md)
+- [`docs/releases/v1.1.1.md`](docs/releases/v1.1.1.md)
+- [`docs/releases/video-target-subtitles-v1.1.1.md`](docs/releases/video-target-subtitles-v1.1.1.md)
 - [`docs/releases/video-subtitle-delivery-v0.1.0.md`](docs/releases/video-subtitle-delivery-v0.1.0.md)
+- 上一个仓库发布：[`docs/releases/v1.1.0.md`](docs/releases/v1.1.0.md)
 - 历史基线：[`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md)
 
 贡献说明：
@@ -70,7 +71,7 @@ flowchart LR
 当任务仍然属于字幕生产时，使用这个 skill：
 
 - 提取适合识别的音频
-- 用 DashScope FunASR 转写
+- 先用 DashScope FunASR 转写，失败时回退到 Qwen OCR
 - 在保留时间轴的前提下做翻译
 - 导出 `srt` / `vtt`
 - 进行批量字幕生成、失败重试和结果汇总

@@ -17,18 +17,19 @@ This repository does not currently ship a dedicated speech-synthesis dubbing ski
 
 ## Current Version Lines
 
-Repository release tag: `v1.1.0`
+Repository release tag: `v1.1.1`
 
 | Skill | Version | Purpose |
 | --- | --- | --- |
-| `video-target-subtitles` | `v1.1.0` | Subtitle generation, localization, timing repair, batch subtitle runs |
+| `video-target-subtitles` | `v1.1.1` | Subtitle generation, localization, timing repair, OCR fallback, batch subtitle runs |
 | `video-subtitle-delivery` | `v0.1.0` | Reviewed subtitle packaging, styled `ASS`, hard-burn output, delivery handoff |
 
 Release notes:
 
-- [`docs/releases/v1.1.0.md`](docs/releases/v1.1.0.md)
-- [`docs/releases/video-target-subtitles-v1.1.0.md`](docs/releases/video-target-subtitles-v1.1.0.md)
+- [`docs/releases/v1.1.1.md`](docs/releases/v1.1.1.md)
+- [`docs/releases/video-target-subtitles-v1.1.1.md`](docs/releases/video-target-subtitles-v1.1.1.md)
 - [`docs/releases/video-subtitle-delivery-v0.1.0.md`](docs/releases/video-subtitle-delivery-v0.1.0.md)
+- Previous repository release: [`docs/releases/v1.1.0.md`](docs/releases/v1.1.0.md)
 - Historical baseline: [`docs/releases/v1.0.0.md`](docs/releases/v1.0.0.md)
 
 Contribution guide:
@@ -70,7 +71,7 @@ flowchart LR
 Use this skill when the task is still about subtitle production:
 
 - extract speech-ready audio
-- transcribe with DashScope FunASR
+- transcribe with DashScope FunASR and fall back to Qwen OCR when speech ASR fails
 - translate while preserving timestamps
 - export `srt` / `vtt`
 - run batch subtitle generation with retry and summary artifacts

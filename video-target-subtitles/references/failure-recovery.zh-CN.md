@@ -10,6 +10,7 @@
 - batch summary 与重量级中间 `segments.json` 分离
 - 运行中断时，保留 `failed_stage` 与错误消息
 - 默认支持从较后阶段重启，而不是每次都重跑 ASR
+- 记录 source-text 阶段最终是语音 ASR 成功，还是走了 OCR 兜底
 
 ## 重启模式
 
@@ -43,6 +44,7 @@ python scripts/retry_failed_translations.py \
 - 这份 summary 对应哪个输入文件
 - 哪个阶段最后一次成功
 - 哪个阶段失败
+- source segments 最终来自语音 ASR 还是 OCR 兜底
 - 当前已经存在哪些最终字幕文件
 - 剩余多少 lint errors 和 warnings
 

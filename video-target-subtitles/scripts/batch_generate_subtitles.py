@@ -183,14 +183,20 @@ def summarize_stage_output(stage_name, payload, paths):
             "duration_seconds": payload.get("duration_seconds"),
         }
     if stage_name == "asr":
+        transcription = payload.get("transcription") or {}
         return {
             "status": "ok",
             "output": str(paths["source_segments"]),
+            "provider": payload.get("provider"),
             "model": payload.get("model"),
             "request_id": payload.get("request_id"),
             "language_hint": payload.get("language_hint"),
             "segments": len(payload.get("segments") or []),
             "segmentation": payload.get("segmentation"),
+            "mode": transcription.get("mode"),
+            "fallback_used": transcription.get("fallback_used"),
+            "fallback_reason": transcription.get("fallback_reason"),
+            "sample_interval": payload.get("sample_interval"),
         }
     if stage_name == "rebalance":
         info = payload.get("rebalanced") or {}
@@ -306,10 +312,12 @@ def build_stage_commands(video_path, paths, args):
             "asr",
             [
                 sys.executable,
-                str(SCRIPT_DIR / "funasr_transcribe.py"),
+                str(SCRIPT_DIR / "transcribe_with_fallback.py"),
                 str(paths["audio"]),
                 str(paths["source_segments"]),
-                "--language-hint",
+                "--video-path",
+                str(video_path),
+                "--asr-language-hint",
                 args.asr_language_hint,
                 "--disable-semantic-punctuation",
                 "--max-sentence-silence",

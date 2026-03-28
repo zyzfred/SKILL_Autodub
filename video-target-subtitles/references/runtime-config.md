@@ -4,9 +4,10 @@
 
 ## Overview
 
-This skill uses two runtime backends:
+This skill uses three runtime backends:
 
 - FunASR via the DashScope Python SDK for speech recognition
+- Qwen OCR via the DashScope OpenAI-compatible endpoint for fallback frame-text extraction
 - An OpenAI-compatible chat completion endpoint for cue-by-cue translation
 
 ## Install Dependencies
@@ -31,11 +32,21 @@ uv run --with dashscope --with openai python scripts/generate_subtitles.py ...
 - `FUNASR_MODEL`: optional, default `fun-asr-realtime`
 - `FUNASR_LANGUAGE_HINT`: optional, for example `zh`, `en`, or `ja`
 - `FUNASR_VOCABULARY_ID`: optional DashScope hotword vocabulary ID
+- `SUBTITLE_OCR_MODEL`: optional OCR fallback model override, default `qwen-vl-ocr-latest`
+- `QWEN_OCR_MODEL`: optional alias for `SUBTITLE_OCR_MODEL`
+- `SUBTITLE_OCR_BASE_URL`: optional override for the OCR fallback compatible-mode endpoint
 
 Endpoint defaults:
 
 - China mainland: `wss://dashscope.aliyuncs.com/api-ws/v1/inference`
 - International: `wss://dashscope-intl.aliyuncs.com/api-ws/v1/inference`
+
+OCR fallback defaults:
+
+- China mainland: `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- International: `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`
+
+In most cases, the only new OCR-specific environment variable you need is `SUBTITLE_OCR_MODEL`. The fallback automatically reuses `DASHSCOPE_API_KEY`. If you need a non-default OCR endpoint, override it with `SUBTITLE_OCR_BASE_URL`.
 
 ## Translation Environment Variables
 
@@ -66,3 +77,4 @@ uv run --with dashscope --with openai python scripts/generate_subtitles.py data/
 ```
 
 Add `--target-locale en-US` or `--source-language zh` when the task needs tighter translation control.
+The orchestration script now attempts FunASR first and falls back to OCR automatically when speech recognition fails or returns no usable segments.

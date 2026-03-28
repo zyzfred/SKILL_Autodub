@@ -4,9 +4,10 @@
 
 ## 概览
 
-这个 skill 依赖两个运行时后端：
+这个 skill 依赖三个运行时后端：
 
 - 使用 DashScope Python SDK 调用 FunASR 做语音识别
+- 当语音识别失败时，使用 DashScope OpenAI-compatible endpoint 调用 Qwen OCR 做抽帧文字提取
 - 使用 OpenAI-compatible chat completion endpoint 做逐 cue 翻译
 
 ## 安装依赖
@@ -31,11 +32,21 @@ uv run --with dashscope --with openai python scripts/generate_subtitles.py ...
 - `FUNASR_MODEL`：可选，默认 `fun-asr-realtime`
 - `FUNASR_LANGUAGE_HINT`：可选，例如 `zh`、`en`、`ja`
 - `FUNASR_VOCABULARY_ID`：可选，DashScope 热词词表 ID
+- `SUBTITLE_OCR_MODEL`：可选，OCR 兜底模型，默认 `qwen-vl-ocr-latest`
+- `QWEN_OCR_MODEL`：`SUBTITLE_OCR_MODEL` 的可选别名
+- `SUBTITLE_OCR_BASE_URL`：可选，自定义 OCR 兜底 compatible-mode endpoint
 
 默认 endpoint：
 
 - 中国大陆：`wss://dashscope.aliyuncs.com/api-ws/v1/inference`
 - 国际站：`wss://dashscope-intl.aliyuncs.com/api-ws/v1/inference`
+
+OCR 兜底默认 endpoint：
+
+- 中国大陆：`https://dashscope.aliyuncs.com/compatible-mode/v1`
+- 国际站：`https://dashscope-intl.aliyuncs.com/compatible-mode/v1`
+
+通常只需要新增一个 OCR 相关环境变量，也就是 `SUBTITLE_OCR_MODEL`。OCR 兜底会自动复用 `DASHSCOPE_API_KEY`。如果需要非默认 OCR endpoint，用 `SUBTITLE_OCR_BASE_URL` 覆盖。
 
 ## 翻译环境变量
 
@@ -66,3 +77,4 @@ uv run --with dashscope --with openai python scripts/generate_subtitles.py data/
 ```
 
 当任务需要更严格的翻译控制时，加上 `--target-locale en-US` 或 `--source-language zh`。
+现在 orchestration script 会先尝试 FunASR；如果语音识别失败或没有产出可用片段，会自动回退到 OCR。

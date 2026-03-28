@@ -39,8 +39,8 @@ They should be read together like this:
 
 Current example:
 
-- repository release tag: `v1.1.0`
-- `video-target-subtitles`: `v1.1.0`
+- repository release tag: `v1.1.1`
+- `video-target-subtitles`: `v1.1.1`
 - `video-subtitle-delivery`: `v0.1.0`
 
 ## When To Bump Which Version

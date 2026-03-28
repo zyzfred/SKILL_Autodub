@@ -9,13 +9,14 @@ from pathlib import Path
 from env_loader import load_dotenv
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+VIDEO_EXTENSIONS = {".mp4", ".mov", ".mkv", ".webm"}
 
 load_dotenv(extra_roots=[Path.cwd(), SCRIPT_DIR])
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Generate target-language subtitles with FunASR transcription and timestamp-preserving translation.",
+        description="Generate target-language subtitles with FunASR transcription, OCR fallback, and timestamp-preserving translation.",
     )
     parser.add_argument("input_path", help="Input video or audio file")
     parser.add_argument(
@@ -291,14 +292,16 @@ def main():
 
     transcribe_cmd = [
         sys.executable,
-        str(SCRIPT_DIR / "funasr_transcribe.py"),
+        str(SCRIPT_DIR / "transcribe_with_fallback.py"),
         str(extracted_audio),
         str(source_segments),
     ]
+    if input_path.suffix.lower() in VIDEO_EXTENSIONS:
+        transcribe_cmd.extend(["--video-path", str(input_path)])
     if args.asr_model:
-        transcribe_cmd.extend(["--model", args.asr_model])
+        transcribe_cmd.extend(["--asr-model", args.asr_model])
     if args.asr_language_hint:
-        transcribe_cmd.extend(["--language-hint", args.asr_language_hint])
+        transcribe_cmd.extend(["--asr-language-hint", args.asr_language_hint])
     if args.semantic_punctuation_enabled is True:
         transcribe_cmd.append("--semantic-punctuation-enabled")
     elif args.semantic_punctuation_enabled is False:
@@ -451,10 +454,15 @@ def main():
         "target_locale": args.target_locale or None,
         "audio": extract_info,
         "asr": {
+            "provider": asr_info.get("provider"),
             "model": asr_info.get("model"),
             "request_id": asr_info.get("request_id"),
             "segments": len(asr_info.get("segments") or []),
             "segmentation": asr_info.get("segmentation"),
+            "mode": asr_info.get("transcription", {}).get("mode"),
+            "fallback_used": asr_info.get("transcription", {}).get("fallback_used"),
+            "fallback_reason": asr_info.get("transcription", {}).get("fallback_reason"),
+            "sample_interval": asr_info.get("sample_interval"),
             "source_segments_json": str(source_segments),
         },
         "rebalance": {

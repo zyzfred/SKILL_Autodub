@@ -64,8 +64,8 @@ When default behavior changes, update the relevant files together:
 
 Current example:
 
-- repository release tag: `v1.1.0`
-- `video-target-subtitles`: `v1.1.0`
+- repository release tag: `v1.1.1`
+- `video-target-subtitles`: `v1.1.1`
 - `video-subtitle-delivery`: `v0.1.0`
 
 ## Branching

@@ -39,8 +39,8 @@
 
 当前示例：
 
-- 仓库级发布标签：`v1.1.0`
-- `video-target-subtitles`：`v1.1.0`
+- 仓库级发布标签：`v1.1.1`
+- `video-target-subtitles`：`v1.1.1`
 - `video-subtitle-delivery`：`v0.1.0`
 
 ## 什么时候该升哪个版本

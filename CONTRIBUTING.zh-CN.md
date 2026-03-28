@@ -64,8 +64,8 @@ python -m py_compile video-target-subtitles/scripts/*.py video-subtitle-delivery
 
 当前示例：
 
-- 仓库级发布标签：`v1.1.0`
-- `video-target-subtitles`：`v1.1.0`
+- 仓库级发布标签：`v1.1.1`
+- `video-target-subtitles`：`v1.1.1`
 - `video-subtitle-delivery`：`v0.1.0`
 
 ## 分支约定

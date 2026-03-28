@@ -10,6 +10,7 @@ The subtitle production skill should treat batch recovery as a first-class path.
 - keep batch summaries separate from heavy intermediate segment JSON
 - preserve the `failed_stage` and error message when a run stops
 - support restarting from a later stage instead of rerunning ASR by default
+- record whether the source-text stage succeeded through speech ASR or OCR fallback
 
 ## Restart Patterns
 
@@ -43,6 +44,7 @@ Each run summary should make it easy to answer:
 - which input file this summary belongs to
 - which stage last succeeded
 - which stage failed
+- whether source segments came from speech ASR or OCR fallback
 - which final subtitle files exist
 - how many lint errors and warnings remain
 

@@ -1,15 +1,16 @@
 ---
 name: video-target-subtitles
-description: Generate target-language subtitles for local video files by extracting speech-ready audio, transcribing it with DashScope FunASR, translating the resulting sentence-aligned segments with an OpenAI-compatible text model while preserving timestamps, and exporting clean SRT or VTT deliverables. Supports batch subtitle generation from a folder of local videos. Use when Codex needs to subtitle or localize MP4, MOV, MKV, or WebM assets, translate existing captions, repair subtitle timing, or prepare subtitle files for review, dubbing, or publishing.
+description: Generate target-language subtitles for local video files by extracting speech-ready audio, transcribing it with DashScope FunASR, falling back to Qwen OCR over sampled video frames when speech recognition fails, translating the resulting sentence-aligned segments with an OpenAI-compatible text model while preserving timestamps, and exporting clean SRT or VTT deliverables. Supports batch subtitle generation from a folder of local videos. Use when Codex needs to subtitle or localize MP4, MOV, MKV, or WebM assets, translate existing captions, repair subtitle timing, or prepare subtitle files for review, dubbing, or publishing.
 ---
 
 # Video Target Subtitles
 
 [English](SKILL.md) | [简体中文](SKILL.zh-CN.md)
 
-Create localized subtitle deliverables from local video files or existing timed-text assets. This skill is intentionally limited to subtitle production and subtitle QA. It now binds a concrete ASR backend and translation path:
+Create localized subtitle deliverables from local video files or existing timed-text assets. This skill is intentionally limited to subtitle production and subtitle QA. It now binds a concrete speech backend, OCR fallback, and translation path:
 
-- ASR: DashScope FunASR via `dashscope.audio.asr.Recognition`
+- Speech ASR: DashScope FunASR via `dashscope.audio.asr.Recognition`
+- OCR fallback: Qwen OCR via the DashScope OpenAI-compatible endpoint when FunASR fails or returns no usable segments
 - Translation: OpenAI-compatible chat completion API
 
 Prefer stable intermediate artifacts so transcription, translation, QA, and re-export can be repeated without rerunning the entire pipeline.
@@ -24,7 +25,6 @@ This skill does not handle:
 
 - delivery directory packaging
 - styled `ASS` generation
-- hard-burned subtitle videos
 - final zip archives
 
 Use a separate delivery skill after subtitle QA when the user wants burn-in or packaged export.
@@ -35,6 +35,7 @@ Use a separate dubbing workflow after subtitle QA when the user wants speech syn
 Read `references/runtime-config.md` before first use.
 
 - Set `DASHSCOPE_API_KEY` in the environment for FunASR.
+- Set `SUBTITLE_OCR_MODEL` in the environment when you want to override the OCR fallback model. The default is `qwen-vl-ocr-latest`. `QWEN_OCR_MODEL` is also accepted as an alias.
 - Set translation environment variables with either:
   - `SUBTITLE_TRANSLATION_API_KEY`, `SUBTITLE_TRANSLATION_MODEL`, and optional `SUBTITLE_TRANSLATION_BASE_URL`
   - or `OPENAI_API_KEY` and `OPENAI_MODEL`
@@ -58,7 +59,7 @@ Read `references/runtime-config.md` before first use.
 3. Reuse timing before generating new timing:
 - If a reliable `srt`, `vtt`, or `ass` file exists, translate cue text and preserve cue boundaries unless timing is clearly broken.
 - If a timed transcript JSON already exists, translate that JSON and export.
-- Only run fresh ASR when no trustworthy timed text exists.
+- Only run fresh source extraction when no trustworthy timed text exists.
 
 4. Inspect the media streams:
 
@@ -76,17 +77,23 @@ python scripts/extract_audio.py input.mp4 work/input.wav
 
 This defaults to mono 16 kHz PCM WAV, which matches the documented FunASR realtime model requirements for `fun-asr-realtime`.
 
-6. Transcribe with FunASR into normalized timed segments:
+6. Transcribe into normalized timed segments with automatic OCR fallback:
 
 ```bash
-uv run --with dashscope python scripts/funasr_transcribe.py work/input.wav work/video.source.segments.json
+uv run --with dashscope --with openai python scripts/transcribe_with_fallback.py \
+  work/input.wav \
+  work/video.source.segments.json \
+  --video-path input.mp4
 ```
 
 Defaults:
 
-- model: `fun-asr-realtime`
-- websocket endpoint: Beijing region unless overridden by env
-- segmentation: semantic punctuation enabled
+- speech model: `fun-asr-realtime`
+- OCR fallback model: `qwen-vl-ocr-latest`
+- speech websocket endpoint: Beijing region unless overridden by env
+- OCR fallback reuses `DASHSCOPE_API_KEY` and the DashScope compatible-mode endpoint for the active region
+- segmentation: semantic punctuation enabled for FunASR
+- OCR timing is sampled from frame intervals, so review hard-burned subtitle videos more carefully than speech-aligned ASR output
 
 7. Rebalance source segments before translation when raw ASR cuts are too coarse or too twitchy:
 
@@ -219,7 +226,7 @@ uv run --with dashscope --with openai python scripts/generate_subtitles.py input
 This script:
 
 - extracts mono 16 kHz WAV audio
-- transcribes with FunASR
+- tries FunASR first and falls back to Qwen OCR over sampled video frames when ASR fails or returns no usable speech segments
 - rebalances source cues by splitting long source cues while preserving short emphasis cues
 - repairs only semantically broken source cues before translation
 - translates each subtitle cue while preserving timestamps
@@ -257,7 +264,7 @@ Batch mode still stops at subtitle outputs and linting. It does not create deliv
 - Keep a machine-readable intermediate JSON file even if the final deliverable is only `srt`.
 - Ask for clarification before translating songs, background chatter, or on-screen signs unless the deliverable clearly requires them.
 - Deliver subtitle files first for open-caption requests; burn-in belongs after subtitle QA.
-- Switch to an OCR workflow when the only available text is hard-burned into video frames. This skill does not automate OCR extraction.
+- When speech ASR fails or the dialogue is only available as hard-burned on-screen text, let the pipeline fall back to OCR and review the sampled timings more carefully.
 - When the user provides a folder, assume every supported video inside that folder belongs to the batch unless they narrow it with stems or filenames.
 - Delivery packaging is a downstream concern. Hand off only the source videos, final `srt`/`vtt`, and run summaries.
 
@@ -281,7 +288,9 @@ When the user does not provide names, write outputs under a predictable folder s
 
 - `scripts/probe_media.py`: summarize streams and duration with `ffprobe`
 - `scripts/extract_audio.py`: extract ASR-friendly WAV audio with `ffmpeg`
+- `scripts/transcribe_with_fallback.py`: try FunASR first and fall back to Qwen OCR when speech recognition fails
 - `scripts/funasr_transcribe.py`: run DashScope FunASR and emit normalized `segments.json`
+- `scripts/ocr_video_transcribe.py`: sample video frames, run Qwen OCR, and emit normalized `segments.json`
 - `scripts/rebalance_segments.py`: split long source cues with word-level timing while preserving short emphasis cues
 - `scripts/semantic_repair_segments.py`: merge and lightly repair only fragmentary source cues before translation
 - `scripts/translate_segments.py`: translate timed segments with an OpenAI-compatible model while preserving timestamps

@@ -1,6 +1,6 @@
 ---
 name: video-target-subtitles
-description: Generate target-language subtitles for local video files by extracting speech-ready audio, transcribing it with DashScope FunASR, translating the resulting sentence-aligned segments with an OpenAI-compatible text model while preserving timestamps, and exporting clean SRT or VTT deliverables. Supports batch subtitle generation from a folder of local videos. Use when Codex needs to subtitle or localize MP4, MOV, MKV, or WebM assets, translate existing captions, repair subtitle timing, or prepare subtitle files for review, dubbing, or publishing.
+description: Generate target-language subtitles for local video files by extracting speech-ready audio, transcribing it with DashScope FunASR, falling back to Qwen OCR over sampled video frames when speech recognition fails, translating the resulting sentence-aligned segments with an OpenAI-compatible text model while preserving timestamps, and exporting clean SRT or VTT deliverables. Supports batch subtitle generation from a folder of local videos. Use when Codex needs to subtitle or localize MP4, MOV, MKV, or WebM assets, translate existing captions, repair subtitle timing, or prepare subtitle files for review, dubbing, or publishing.
 ---
 
 # Video Target Subtitles
@@ -9,7 +9,8 @@ description: Generate target-language subtitles for local video files by extract
 
 从本地视频文件或已有时间轴字幕资产生成目标语言字幕。这个 skill 有意只覆盖字幕生产与字幕 QA，不把 delivery 和配音混在一起。当前绑定的后端路径如下：
 
-- ASR：DashScope FunASR，经由 `dashscope.audio.asr.Recognition`
+- 语音 ASR：DashScope FunASR，经由 `dashscope.audio.asr.Recognition`
+- OCR 兜底：当 FunASR 失败或没有产出可用片段时，经由 DashScope OpenAI-compatible endpoint 调用 Qwen OCR 抽取画面文字
 - 翻译：OpenAI-compatible chat completion API
 
 优先保留稳定的中间产物，这样转写、翻译、QA、重导出都可以重复执行，而不必每次重跑整条链。
@@ -24,7 +25,6 @@ description: Generate target-language subtitles for local video files by extract
 
 - delivery 目录打包
 - 样式化 `ASS` 生成
-- 硬字幕视频
 - 最终 zip 交付包
 
 当用户要压制、打包时，切换到单独的 delivery skill。
@@ -35,6 +35,7 @@ description: Generate target-language subtitles for local video files by extract
 首次使用前先阅读 `references/runtime-config.md` 与 `references/runtime-config.zh-CN.md`。
 
 - 为 FunASR 设置环境变量 `DASHSCOPE_API_KEY`
+- 如果要覆盖 OCR 兜底模型，在环境变量里设置 `SUBTITLE_OCR_MODEL`。默认是 `qwen-vl-ocr-latest`。同时兼容 `QWEN_OCR_MODEL` 这个别名。
 - 为翻译设置以下任一组环境变量：
   - `SUBTITLE_TRANSLATION_API_KEY`、`SUBTITLE_TRANSLATION_MODEL`，以及可选的 `SUBTITLE_TRANSLATION_BASE_URL`
   - 或 `OPENAI_API_KEY` 与 `OPENAI_MODEL`
@@ -60,7 +61,7 @@ description: Generate target-language subtitles for local video files by extract
 3. 能复用已有时间轴时，不重造时间轴：
 - 如果已有可靠的 `srt`、`vtt` 或 `ass`，直接翻译 cue 文本并尽量保留 cue 边界
 - 如果已有时间轴 transcript JSON，直接翻译 JSON 并导出
-- 只有在没有可信时间轴文本时才跑新的 ASR
+- 只有在没有可信时间轴文本时才跑新的 source extraction
 
 4. 探测媒体流：
 
@@ -78,17 +79,23 @@ python scripts/extract_audio.py input.mp4 work/input.wav
 
 默认提取为单声道 16 kHz PCM WAV，这与 `fun-asr-realtime` 的要求一致。
 
-6. 用 FunASR 转写为标准化时间轴片段：
+6. 先做语音转写，必要时自动回退到 OCR，生成标准化时间轴片段：
 
 ```bash
-uv run --with dashscope python scripts/funasr_transcribe.py work/input.wav work/video.source.segments.json
+uv run --with dashscope --with openai python scripts/transcribe_with_fallback.py \
+  work/input.wav \
+  work/video.source.segments.json \
+  --video-path input.mp4
 ```
 
 默认值：
 
-- 模型：`fun-asr-realtime`
-- websocket endpoint：默认中国区，可由环境变量覆盖
-- segmentation：开启 semantic punctuation
+- 语音模型：`fun-asr-realtime`
+- OCR 兜底模型：`qwen-vl-ocr-latest`
+- 语音 websocket endpoint：默认中国区，可由环境变量覆盖
+- OCR 兜底会复用 `DASHSCOPE_API_KEY`，并按当前地域使用 DashScope compatible-mode endpoint
+- FunASR 默认开启 semantic punctuation
+- OCR 时间轴来自抽帧采样，不是逐词对齐；对硬字幕视频应比普通 ASR 结果更谨慎地复核
 
 7. 当原始 ASR 切分过粗或过碎时，先做 source 重分句：
 
@@ -220,7 +227,7 @@ uv run --with dashscope --with openai python scripts/generate_subtitles.py input
 这个脚本会：
 
 - 提取单声道 16 kHz WAV 音频
-- 用 FunASR 转写
+- 先尝试 FunASR，若失败或没有可用语音片段则回退到按视频抽帧的 Qwen OCR
 - 在保留短重点句的前提下重分 source cue
 - 只修复语义残缺 source 片段
 - 保持时间轴不变地翻译每个字幕 cue
@@ -258,7 +265,7 @@ Batch 模式仍然停在字幕输出和 lint，不会生成 delivery 目录、`A
 - 即便最终只交 `srt`，也保留中间 JSON
 - 歌曲、背景对白、屏幕文字是否翻译，若不明确就先澄清
 - 对开放字幕请求，先交付字幕文件；burn-in 属于 QA 之后的事
-- 如果唯一文本是硬烧录在画面里的，改走 OCR 流程，这个 skill 不做 OCR
+- 如果语音 ASR 失败，或对白只存在于硬烧录画面文字中，让流水线自动回退到 OCR，并更仔细地复核采样时间轴
 - 当用户给的是文件夹时，默认其中所有支持的视频都属于这次 batch，除非用户用文件名或 stem 缩小范围
 - delivery 打包是下游问题；这里最多交付 source 视频、最终 `srt`/`vtt` 和 run summaries
 - 多语种配音属于更下游的语音系统；这个 skill 负责给配音阶段准备稳定的已审核字幕和时间轴资产
@@ -283,7 +290,9 @@ Batch 模式仍然停在字幕输出和 lint，不会生成 delivery 目录、`A
 
 - `scripts/probe_media.py`：用 `ffprobe` 汇总媒体流和时长
 - `scripts/extract_audio.py`：用 `ffmpeg` 提取适合 ASR 的 WAV 音频
+- `scripts/transcribe_with_fallback.py`：先尝试 FunASR，失败时自动回退到 Qwen OCR
 - `scripts/funasr_transcribe.py`：运行 DashScope FunASR 并输出标准化 `segments.json`
+- `scripts/ocr_video_transcribe.py`：按时间间隔抽取视频帧，运行 Qwen OCR，并输出标准化 `segments.json`
 - `scripts/rebalance_segments.py`：在保留短重点句的同时拆长 source cue
 - `scripts/semantic_repair_segments.py`：只对残缺 source cue 做轻量合并与修复
 - `scripts/translate_segments.py`：使用 OpenAI-compatible 模型翻译时间轴片段并保留时间轴
